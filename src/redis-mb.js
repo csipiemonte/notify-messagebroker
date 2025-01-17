@@ -3,7 +3,9 @@ const conf = commons.merge(require('./conf/mb'),require('./conf/mb-' + (process.
 
 const fs = require('fs');
 const util = require('util');
-const redis = new require('ioredis')(conf.redis);
+const Redis = require('ioredis');
+
+const redis = new Redis(conf.redis);
 
 const obj = commons.obj(conf);
 const logger = obj.logger();
@@ -25,6 +27,10 @@ redis.defineCommand('move_messages', {
     lua: fs.readFileSync('script/move-messages.lua')
 });
 
+redis.defineCommand('cleanup_retries', {
+    numberOfKeys: 0,
+    lua: fs.readFileSync('script/cleanup-retries.lua')
+});
 
 redis.defineCommand('setup', {
     numberOfKeys: 0,
@@ -79,6 +85,15 @@ async function move_messages(keyPrefix){
     return redis.move_messages(keyPrefix);
 }
 
+/**
+ * Clean up retry hasmaps
+ * @param {*} keyPrefix 
+ * @returns 
+ */
+async function cleanup_retries(keyPrefix){
+    return redis.cleanup_retries(keyPrefix);
+}
+
 async function hgetall(key){
     return await redis.hgetall(key);
 }
@@ -103,11 +118,12 @@ async function hmset(key,map){
 module.exports = {
     get_message: get_message,
     setup: setup,
-    add_message:add_message,
-    move_messages:move_messages,
+    add_message: add_message,
+    move_messages: move_messages,
+    cleanup_retries: cleanup_retries,
     hgetall: hgetall,
-    type:type,
-    lrange:lrange,
-    del:del,
-    hmset:hmset
+    type: type,
+    lrange: lrange,
+    del: del,
+    hmset: hmset
 }

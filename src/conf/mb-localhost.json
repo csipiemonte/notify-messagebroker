@@ -8,27 +8,8 @@
   },
   "log4js": {
     "appenders": {
-      "consoleAppender": {
-        "type": "console",
-        "layout": {
-          "type": "pattern",
-          "pattern": "%d{yyyy-MM-dd hh:mm:ss} [%-5p] %m"
-        }
-      },
-      "mbAppender": {
-        "type": "file",
-        "filename": "../../logs/mb.log",
-        "maxLogSize": 5242880,
-        "compress": true
-      }
-    },
-    "categories": {
-      "default": {
-        "appenders": [
-          "consoleAppender",
-          "mbAppender"
-        ],
-        "level": "debug"
+      "fileAppender": {
+        "filename": "../../logs/mb.log"
       }
     }
   }

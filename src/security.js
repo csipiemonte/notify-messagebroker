@@ -6,7 +6,7 @@ var commons = require("../../commons/src/commons");
 const conf = commons.merge(require('./conf/mb'),require('./conf/mb-' + (process.env.ENVIRONMENT || 'localhost')));
 const obj = commons.obj(conf);
 
-var jwt = require('express-jwt');
+var { expressjwt: jwt } = require('express-jwt');
 
 var express = require('express');
 var router = express.Router();
@@ -16,15 +16,16 @@ const utility = obj.utility();
 var crypto = obj.cryptoAES_cbc();
 
 /**
- * check if is encrypted with the right key, specified in conf.security.secret , and put the decoded token in req.user
+ * check if is encrypted with the right key, specified in conf.security.secret , and put the decoded token in req.auth
  */
 router.use(jwt({
     secret: conf.security.secret,
+    algorithms: ["HS256"],
     getToken: function fromHeaderOrQuerystring(req) {
         try {
             return utility.checkNested(conf,"security.crypto.password") ? crypto.decrypt(req.headers['x-authentication'], conf.security.crypto.password):req.headers['x-authentication'];
         } catch (e) {
-            logger.debug("error decrypting JWT token:", e);
+            logger.debug("error decrypting JWT token: " + req.headers['x-authentication'], e.message);
             e.name = "Decrypting Error";
             throw e;
         }
@@ -35,12 +36,12 @@ router.use(jwt({
  * check for application authorization, expire date and if permissions contains "backend"
  */
 router.use(function (req, res, next) {
-        //logger.debug("applications: ", req.user);
+        //logger.debug("applications: ", req.auth);
 
-        if (!req.user.applications ||!(Object.keys(req.user.applications)).includes(conf.app_name)) {
+        if (!req.auth.applications ||!(Object.keys(req.auth.applications)).includes(conf.app_name)) {
             logger.error("user doesn't have application permissions");
             res.status(401);
-            return res.end("You don't have applications permissions");
+            return res.end("you don't have applications permissions");
         }
 
         return next();
