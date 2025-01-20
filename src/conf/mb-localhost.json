@@ -1,6 +1,9 @@
 {
   "security": {
-    "secret": "dev"
+    "secret": "dev",
+    "crypto":{
+      "password":"dev"
+    }
   },
   "redis": {
     "keyPrefix": "mb:",
